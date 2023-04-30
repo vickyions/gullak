@@ -1,0 +1,21 @@
+{
+  "name": "gullak-server",
+  "version": "1.0.0",
+  "description": "personal finance tracker gullak backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vicky Soni",
+  "license": "GPL-3.0-or-later",
+  "devDependencies": {
+    "@types/node": "^18.16.3",
+    "nodemon": "^2.0.22",
+    "prisma": "^4.13.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.13.0"
+  }
+}
