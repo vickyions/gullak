@@ -83,3 +83,15 @@ export const numValidator = (field: string) =>
     .isNumeric()
     .withMessage(`${field} Must be Alpha`)
     .escape();
+
+export const stringValidator = (field: string, length?: Length) =>
+  body(field)
+    .trim()
+    .notEmpty()
+    .isString()
+    .withMessage(`${field} Must be String`)
+    .isLength({ max: length?.max || 300, min: length?.min || 1 })
+    .withMessage(
+      `${field} Length must be between ${length?.max} to ${length?.min}`
+    )
+    .escape();

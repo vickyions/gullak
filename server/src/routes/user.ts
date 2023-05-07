@@ -7,6 +7,7 @@ import {
   emailValidator,
   nameValidator,
   passwordValidator,
+  stringValidator,
 } from "../utils/validators";
 const router = Router();
 const SALT_ROUNDS: number = parseInt(process.env.SALT_ROUNDS || "10", 10);
@@ -86,7 +87,7 @@ router.post(
           },
         },
       });
-      const accToken = await sign({ email }, PRIVATE_TOKEN, {
+      const accToken = sign({ email }, PRIVATE_TOKEN, {
         algorithm: "HS256",
         expiresIn: "5d",
       });
@@ -108,5 +109,35 @@ router.post(
     }
   }
 );
+
+router.POST('/login', emailValidator("email"), stringValidator("password", {max: 64, min: 8}), async (req, res) => {
+	try {
+      const result = validationResult(req);
+      if (!result.isEmpty()) {
+        return res.json({
+          errors: result.array(),
+        });
+      }
+
+      const {email, password} : {email: string, password: string} = req.body;
+      const user = await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        return res.status(401).json({
+          error: "Invalid credentials. Please try again",
+        });
+      }
+
+	} catch (err) {
+		console.error(Date().toLocaleString(), err);
+		res.status(500).json({
+			message: "An error occured while registering the user",
+		});
+	}
+})
 
 export default router;
