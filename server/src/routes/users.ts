@@ -91,7 +91,7 @@ router.post(
         algorithm: "HS256",
         expiresIn: "5d",
       });
-      console.log(newUser.email);
+
       res.cookie("access-token", accToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV !== "dev",
@@ -110,8 +110,12 @@ router.post(
   }
 );
 
-router.POST('/login', emailValidator("email"), stringValidator("password", {max: 64, min: 8}), async (req, res) => {
-	try {
+router.post(
+  "/login",
+  emailValidator("email"),
+  stringValidator("password", { max: 64, min: 8 }),
+  async (req, res) => {
+    try {
       const result = validationResult(req);
       if (!result.isEmpty()) {
         return res.json({
@@ -119,7 +123,7 @@ router.POST('/login', emailValidator("email"), stringValidator("password", {max:
         });
       }
 
-      const {email, password} : {email: string, password: string} = req.body;
+      const { email, password }: { email: string; password: string } = req.body;
       const user = await prisma.user.findUnique({
         where: {
           email,
@@ -132,12 +136,34 @@ router.POST('/login', emailValidator("email"), stringValidator("password", {max:
         });
       }
 
-	} catch (err) {
-		console.error(Date().toLocaleString(), err);
-		res.status(500).json({
-			message: "An error occured while registering the user",
-		});
-	}
-})
+      const isCorrectPass = await compare(password, user.password);
+
+      if (!isCorrectPass) {
+        return res.status(401).json({
+          error: "Invalid credentials. Please try again",
+        });
+      }
+
+      const accToken = sign({ email: user.email }, PRIVATE_TOKEN, {
+        algorithm: "HS256",
+        expiresIn: "5d",
+      });
+
+      res.cookie("access-token", accToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== "dev",
+        maxAge: 432000000, // 5days
+      });
+      res.status(201).json({
+        message: "Successfully logged in",
+      });
+    } catch (err) {
+      console.error(Date().toLocaleString(), err);
+      res.status(500).json({
+        message: "An error occured while registering the user",
+      });
+    }
+  }
+);
 
 export default router;
